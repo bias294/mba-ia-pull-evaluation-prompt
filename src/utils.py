@@ -8,6 +8,7 @@ import json
 from typing import Dict, Any, Optional
 from pathlib import Path
 from dotenv import load_dotenv
+from langchain_core.runnables import RunnableLambda
 
 load_dotenv()
 
@@ -173,6 +174,21 @@ def extract_json_from_response(response_text: str) -> Optional[Dict[str, Any]]:
     return None
 
 
+def _content_as_text(message):
+    """Converte o `content` de uma AIMessage (lista de blocos) em texto simples."""
+    content = message.content
+    if isinstance(content, str):
+        return message
+
+    text = "".join(
+        block if isinstance(block, str)
+        else block.get("text", "") if block.get("type") == "text"
+        else ""
+        for block in content
+    )
+    return message.model_copy(update={"content": text})
+
+
 def get_llm(model: Optional[str] = None, temperature: float = 0.0):
     """
     Retorna uma instância de LLM configurada baseada no provider.
@@ -225,11 +241,14 @@ def get_llm(model: Optional[str] = None, temperature: float = 0.0):
                 "Obtenha uma chave em: https://aistudio.google.com/app/apikey"
             )
 
-        return ChatGoogleGenerativeAI(
+        llm = ChatGoogleGenerativeAI(
             model=model_name,
             temperature=temperature,
             google_api_key=api_key
         )
+        # Modelos Gemini 3.x devolvem `content` como lista de blocos; o restante
+        # do projeto espera uma string.
+        return llm | RunnableLambda(_content_as_text)
 
     else:
         raise ValueError(

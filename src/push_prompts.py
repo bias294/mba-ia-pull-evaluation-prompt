@@ -57,7 +57,32 @@ def push_prompt_to_langsmith(prompt_name: str, prompt_data: dict) -> bool:
     Returns:
         True se sucesso, False caso contrário
     """
-    ...
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", prompt_data["system_prompt"]),
+        ("user", prompt_data["user_prompt"]),
+    ])
+
+    techniques = prompt_data.get("techniques_applied", [])
+    description = prompt_data.get("description", "")
+    if techniques:
+        description = f"{description}. Técnicas: {', '.join(techniques)}"
+
+    try:
+        client = Client()
+        url = client.push_prompt(
+            prompt_name,
+            object=prompt,
+            is_public=True,
+            description=description,
+            tags=prompt_data.get("tags", []),
+        )
+    except Exception as e:
+        print(f"❌ Erro ao fazer push de {prompt_name}: {e}")
+        return False
+
+    print(f"✅ Prompt publicado: {prompt_name}")
+    print(f"   {url}")
+    return True
 
 
 def validate_prompt(prompt_data: dict) -> tuple[bool, list]:
@@ -70,12 +95,49 @@ def validate_prompt(prompt_data: dict) -> tuple[bool, list]:
     Returns:
         (is_valid, errors) - Tupla com status e lista de erros
     """
-    ...
+    errors = []
+
+    for field in ("description", "system_prompt", "user_prompt", "version"):
+        if not str(prompt_data.get(field, "")).strip():
+            errors.append(f"Campo obrigatório faltando ou vazio: {field}")
+
+    if "TODO" in prompt_data.get("system_prompt", ""):
+        errors.append("system_prompt ainda contém TODOs")
+
+    if "{bug_report}" not in prompt_data.get("user_prompt", ""):
+        errors.append("user_prompt precisa conter a variável {bug_report}")
+
+    techniques = prompt_data.get("techniques_applied", [])
+    if len(techniques) < 2:
+        errors.append(f"Mínimo de 2 técnicas requeridas, encontradas: {len(techniques)}")
+
+    return (len(errors) == 0, errors)
 
 
 def main():
     """Função principal"""
-    ...
+    print_section_header("PUSH DE PROMPTS PARA O LANGSMITH")
+
+    if not check_env_vars(["LANGSMITH_API_KEY", "USERNAME_LANGSMITH_HUB"]):
+        return 1
+
+    data = load_yaml("prompts/bug_to_user_story_v2.yml")
+    if not data:
+        return 1
+
+    prompt_data = data["bug_to_user_story_v2"]
+
+    is_valid, errors = validate_prompt(prompt_data)
+    if not is_valid:
+        print("❌ Prompt inválido:")
+        for error in errors:
+            print(f"   - {error}")
+        return 1
+
+    username = os.getenv("USERNAME_LANGSMITH_HUB")
+    prompt_name = f"{username}/bug_to_user_story_v2"
+
+    return 0 if push_prompt_to_langsmith(prompt_name, prompt_data) else 1
 
 
 if __name__ == "__main__":
