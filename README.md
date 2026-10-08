@@ -16,7 +16,7 @@ Exemplo de prompt RUIM (v1) — apenas ilustrativo, para você entender o ponto 
 
 ```
 ==================================================
-Prompt: {seu_username}/bug_to_user_story_v1
+Prompt: bias294/bug_to_user_story_v1
 ==================================================
 
 Métricas Derivadas:
@@ -43,7 +43,7 @@ python src/evaluate.py
 
 Executando avaliação dos prompts...
 ==================================================
-Prompt: {seu_username}/bug_to_user_story_v2
+Prompt: bias294/bug_to_user_story_v2
 ==================================================
 
 Métricas Derivadas:
@@ -58,7 +58,7 @@ Métricas Base:
 ✅ STATUS: APROVADO - Todas as métricas >= 0.8
 
 Resultados no LangSmith (notas gravadas como feedback no experimento):
-  {seu_username}/bug_to_user_story_v2
+  bias294/bug_to_user_story_v2
     https://smith.langchain.com/o/.../datasets/.../compare?selectedSessions=...
 ```
 
@@ -166,7 +166,7 @@ Tarefas:
 
 - Implementar o script src/push_prompts.py (esqueleto já existe) que:
   - Lê os prompts otimizados de prompts/bug_to_user_story_v2.yml
-  - Faz push para o LangSmith com nomes versionados: {seu_username}/bug_to_user_story_v2
+  - Faz push para o LangSmith com nomes versionados: bias294/bug_to_user_story_v2
   - Adiciona metadados (tags, descrição, técnicas utilizadas)
 - Executar o script e verificar no dashboard do LangSmith se os prompts foram publicados
 - Deixá-lo público (`is_public=True` no push, ou pelo menu "Make Public" na interface)
@@ -364,7 +364,7 @@ Rode uma vez e guarde o endereço: ao compartilhar de novo, o link muda.
 
 # Entrega: Otimização do prompt `bug_to_user_story`
 
-Handle do Hub: `bias294`. Prompt publicado: `bias294/bug_to_user_story_v2`.
+Handle do Hub (o `{seu_username}` do enunciado): `bias294`. Prompt publicado: `bias294/bug_to_user_story_v2`.
 
 ## Técnicas Aplicadas (Fase 2)
 
